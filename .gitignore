@@ -2,5 +2,6 @@
 .vscode/launch.json
 cups-backend/onenote_backend
 /OneNoteHelperApp/.build
-/SendToOneNote.xcodeproj/xcuserdata
-/SendToOneNote.xcodeproj/xcshareddata
+SendToOneNote.xcodeproj/xcshareddata
+SendToOneNote.xcodeproj/project.xcworkspace/xcuserdata/**
+

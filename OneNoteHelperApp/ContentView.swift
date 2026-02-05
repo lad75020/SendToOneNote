@@ -9,6 +9,12 @@ struct ContentView: View {
     @StateObject private var sections = SectionStore.shared
     @StateObject private var settings = SettingsStore.shared
 
+    /// Controls how the helper builds the OneNote page when importing print jobs.
+    /// - image: render pages as PNGs and upload as <img> attachments.
+    /// - text: upload extracted text only.
+    /// - hybrid: current default (text + embedded images when found; falls back to rendered pages if needed).
+    @AppStorage("ImportMode") private var importMode: String = "hybrid"
+
     private func effectiveClientId() -> String {
         let v = ((Bundle.main.object(forInfoDictionaryKey: "MSALClientId") as? String) ?? UserDefaults.standard.string(forKey: "MSALClientId") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         return v
@@ -189,6 +195,21 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
 
                     Text("This folder must contain Incoming/Processing/Done/Failed. The CUPS backend should drop job-*.pdf + job-*.json into Incoming.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            GroupBox("Import mode") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Picker("Mode", selection: $importMode) {
+                        Text("Image").tag("image")
+                        Text("Text").tag("text")
+                        Text("Hybrid").tag("hybrid")
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text("Image: upload rendered pages as images only.  Text: upload extracted text only.  Hybrid: text + embedded images when available (fallback to rendered pages if needed).")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

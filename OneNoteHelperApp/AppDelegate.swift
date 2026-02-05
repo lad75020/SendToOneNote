@@ -717,8 +717,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             effectiveURL = fileURL
         }
 
+        enum ImportMode: String {
+            case image
+            case text
+            case hybrid
+        }
+
+        let importModeRaw = (UserDefaults.standard.string(forKey: "ImportMode") ?? "hybrid").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let importMode = ImportMode(rawValue: importModeRaw) ?? .hybrid
+
         // Prefer selectable text: extract attributed text from the PDF and convert to HTML.
-        // If extraction fails (e.g. scanned PDF), fall back to rendering pages as images.
+        // Depending on ImportMode, we may force images-only or text-only.
+        // If extraction fails (e.g. scanned PDF), Hybrid can fall back to rendering pages as images.
         let maxPages = 200
         let renderScale: CGFloat = 2.0
 
@@ -743,11 +753,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             <html>
               <head>
                 <meta charset="utf-8" />
-                <title>\(escapeHTML(pageTitle))</title>
+                <title>\(escapeHTML(jobTitle))</title>
               </head>
               <body>
-                <h1>\(escapeHTML(pageTitle))</h1>
-                <p><b>Source:</b> \(escapeHTML(jobTitle))</p>
+                <h1>\(escapeHTML(jobTitle))</h1>
+                <p><b>Source:</b> \(escapeHTML(pageTitle))</p>
                 <p>Imported by OneNote Helper.</p>
                 <p>User: \(escapeHTML(user)) &nbsp; Job: \(escapeHTML(job))</p>
                 \(imgHTML)
@@ -771,105 +781,169 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return true
         }
 
-        if let pagesHTMLRaw = self.extractPDFPagesAsHTMLBodies(fileURL: effectiveURL, maxPages: maxPages) {
-            // Join to run heuristics + logs.
+        switch importMode {
+        case .image:
+            self.log("Import mode=Image; forcing rendered pages as PNGs")
+            if !fallbackToImages() {
+                completion(false)
+                return
+            }
+
+        case .text:
+            self.log("Import mode=Text; extracting text only (no images)")
+            guard let pagesHTMLRaw = self.extractPDFPagesAsHTMLBodies(fileURL: effectiveURL, maxPages: maxPages) else {
+                self.log("ERROR: No extracted HTML (text mode) for \(filePath)")
+                completion(false)
+                return
+            }
+
             let joinedHTML = pagesHTMLRaw.joined(separator: "\n<hr />\n")
             let extractedHTML = joinedHTML.trimmingCharacters(in: .whitespacesAndNewlines)
             self.log("Extracted HTML bytes=\(extractedHTML.utf8.count)")
-            if !extractedHTML.isEmpty {
-                let preview = String(extractedHTML.prefix(200)).replacingOccurrences(of: "\n", with: "\\n")
-                self.log("Extracted HTML preview: \(preview)")
 
-                // Heuristic: PDFs converted from PostScript often have garbage text extraction (missing ToUnicode).
-                // In hybrid mode, we keep images, but replace the extracted text with a short note if it is gibberish.
-                var effectivePagesHTML = pagesHTMLRaw
-                if psConverted {
-                    let plain = self.plainTextFromHTML(extractedHTML)
-                    if self.textLooksGibberish(plain) {
-                        self.log("Extracted text looks like gibberish (PS-converted); replacing text with note (hybrid mode)")
-                        effectivePagesHTML = Array(repeating: "<p><i>(Text extraction from this print job is unreliable; see images below.)</i></p>", count: pagesHTMLRaw.count)
-                    }
+            guard !extractedHTML.isEmpty else {
+                self.log("ERROR: Extracted HTML empty (text mode) for \(filePath)")
+                completion(false)
+                return
+            }
+
+            let preview = String(extractedHTML.prefix(200)).replacingOccurrences(of: "\n", with: "\\n")
+            self.log("Extracted HTML preview: \(preview)")
+
+            // Text-only mode: upload just the extracted text. Do not embed images and do not fall back to rendered pages.
+            var pageSections = ""
+            for (idx, pageHTMLBody) in pagesHTMLRaw.enumerated() {
+                pageSections += "<h2>Page \(idx + 1)</h2>\n"
+                pageSections += pageHTMLBody
+                if idx < pagesHTMLRaw.count - 1 {
+                    pageSections += "\n<hr />\n"
                 }
+            }
 
-                self.log("Upload: preparing HYBRID (per-page) page for sectionId=\(UserDefaults.standard.string(forKey: targetSectionIdKey) ?? "(default)") title=\(pageTitle)")
+            let html = """
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8" />
+                <title>\(escapeHTML(jobTitle))</title>
+              </head>
+              <body>
+                <h1>\(escapeHTML(jobTitle))</h1>
+                <p><b>Source:</b> \(escapeHTML(pageTitle))</p>
+                <p>Imported by OneNote Helper.</p>
+                <p>User: \(escapeHTML(user)) &nbsp; Job: \(escapeHTML(job))</p>
+                <hr />
+                \(pageSections)
+              </body>
+            </html>
+            """
 
-                // Hybrid mode: include extracted text + embedded PDF image XObjects, placed after the page text.
-                let xobjImages = self.extractPDFImageXObjects(fileURL: effectiveURL, maxPages: min(maxPages, 200), maxImages: 400)
-                var imagesByPage: [Int: [EmbeddedImagePart]] = [:]
-                for img in xobjImages {
-                    imagesByPage[img.pageIndex, default: []].append(img)
-                }
+            appendMultipartPart(&body, boundary: boundary,
+                                contentType: "text/html; charset=utf-8",
+                                contentDisposition: "form-data; name=\"Presentation\"",
+                                data: Data(html.utf8))
 
-                if !xobjImages.isEmpty {
-                    self.log("Found \(xobjImages.count) PDF image XObject(s); embedding as attachments")
-                }
+        case .hybrid:
+            if let pagesHTMLRaw = self.extractPDFPagesAsHTMLBodies(fileURL: effectiveURL, maxPages: maxPages) {
+                // Join to run heuristics + logs.
+                let joinedHTML = pagesHTMLRaw.joined(separator: "\n<hr />\n")
+                let extractedHTML = joinedHTML.trimmingCharacters(in: .whitespacesAndNewlines)
+                self.log("Extracted HTML bytes=\(extractedHTML.utf8.count)")
+                if !extractedHTML.isEmpty {
+                    let preview = String(extractedHTML.prefix(200)).replacingOccurrences(of: "\n", with: "\\n")
+                    self.log("Extracted HTML preview: \(preview)")
 
-                var pageSections = ""
-                for (idx, pageHTMLBody) in effectivePagesHTML.enumerated() {
-                    let imgs = imagesByPage[idx] ?? []
-                    var imgsHTML = ""
-                    if !imgs.isEmpty {
-                        imgsHTML += "\n<div style=\"margin-top: 12px;\">\n"
-                        for (j, item) in imgs.enumerated() {
-                            imgsHTML += "<div style=\"margin: 10px 0;\"><img src=\"name:\(item.token)\" alt=\"Image \(j + 1)\" /></div>\n"
+                    // Heuristic: PDFs converted from PostScript often have garbage text extraction (missing ToUnicode).
+                    // In hybrid mode, we keep images, but replace the extracted text with a short note if it is gibberish.
+                    var effectivePagesHTML = pagesHTMLRaw
+                    if psConverted {
+                        let plain = self.plainTextFromHTML(extractedHTML)
+                        if self.textLooksGibberish(plain) {
+                            self.log("Extracted text looks like gibberish (PS-converted); replacing text with note (hybrid mode)")
+                            effectivePagesHTML = Array(repeating: "<p><i>(Text extraction from this print job is unreliable; see images below.)</i></p>", count: pagesHTMLRaw.count)
                         }
-                        imgsHTML += "</div>\n"
                     }
 
-                    pageSections += "<h2>Page \(idx + 1)</h2>\n"
-                    pageSections += pageHTMLBody
-                    pageSections += imgsHTML
-                    if idx < pagesHTMLRaw.count - 1 {
-                        pageSections += "\n<hr />\n"
+                    self.log("Upload: preparing HYBRID (per-page) page for sectionId=\(UserDefaults.standard.string(forKey: targetSectionIdKey) ?? "(default)") title=\(pageTitle)")
+
+                    // Hybrid mode: include extracted text + embedded PDF image XObjects, placed after the page text.
+                    let xobjImages = self.extractPDFImageXObjects(fileURL: effectiveURL, maxPages: min(maxPages, 200), maxImages: 400)
+                    var imagesByPage: [Int: [EmbeddedImagePart]] = [:]
+                    for img in xobjImages {
+                        imagesByPage[img.pageIndex, default: []].append(img)
                     }
-                }
 
-                let html = """
-                <!DOCTYPE html>
-                <html>
-                  <head>
-                    <meta charset="utf-8" />
-                    <title>\(escapeHTML(pageTitle))</title>
-                  </head>
-                  <body>
-                    <h1>\(escapeHTML(pageTitle))</h1>
-                    <p><b>Source:</b> \(escapeHTML(jobTitle))</p>
-                    <p>Imported by OneNote Helper.</p>
-                    <p>User: \(escapeHTML(user)) &nbsp; Job: \(escapeHTML(job))</p>
-                    <hr />
-                    \(pageSections)
-                  </body>
-                </html>
-                """
+                    if !xobjImages.isEmpty {
+                        self.log("Found \(xobjImages.count) PDF image XObject(s); embedding as attachments")
+                    }
 
-                appendMultipartPart(&body, boundary: boundary,
-                                    contentType: "text/html; charset=utf-8",
-                                    contentDisposition: "form-data; name=\"Presentation\"",
-                                    data: Data(html.utf8))
+                    var pageSections = ""
+                    for (idx, pageHTMLBody) in effectivePagesHTML.enumerated() {
+                        let imgs = imagesByPage[idx] ?? []
+                        var imgsHTML = ""
+                        if !imgs.isEmpty {
+                            imgsHTML += "\n<div style=\"margin-top: 12px;\">\n"
+                            for (j, item) in imgs.enumerated() {
+                                imgsHTML += "<div style=\"margin: 10px 0;\"><img src=\"name:\(item.token)\" alt=\"Image \(j + 1)\" /></div>\n"
+                            }
+                            imgsHTML += "</div>\n"
+                        }
 
-                // Attach embedded images referenced by name:<token>.
-                for item in xobjImages {
-                    appendMultipartPart(&body,
-                                        boundary: boundary,
-                                        contentType: item.mimeType,
-                                        contentDisposition: "form-data; name=\"\(item.token)\"; filename=\"\(item.filename)\"",
-                                        data: item.data)
+                        pageSections += "<h2>Page \(idx + 1)</h2>\n"
+                        pageSections += pageHTMLBody
+                        pageSections += imgsHTML
+                        if idx < pagesHTMLRaw.count - 1 {
+                            pageSections += "\n<hr />\n"
+                        }
+                    }
+
+                    let html = """
+                    <!DOCTYPE html>
+                    <html>
+                      <head>
+                        <meta charset="utf-8" />
+                        <title>\(escapeHTML(jobTitle))</title>
+                      </head>
+                      <body>
+                        <h1>\(escapeHTML(jobTitle))</h1>
+                        <p><b>Source:</b> \(escapeHTML(pageTitle))</p>
+                        <p>Imported by OneNote Helper.</p>
+                        <p>User: \(escapeHTML(user)) &nbsp; Job: \(escapeHTML(job))</p>
+                        <hr />
+                        \(pageSections)
+                      </body>
+                    </html>
+                    """
+
+                    appendMultipartPart(&body, boundary: boundary,
+                                        contentType: "text/html; charset=utf-8",
+                                        contentDisposition: "form-data; name=\"Presentation\"",
+                                        data: Data(html.utf8))
+
+                    // Attach embedded images referenced by name:<token>.
+                    for item in xobjImages {
+                        appendMultipartPart(&body,
+                                            boundary: boundary,
+                                            contentType: item.mimeType,
+                                            contentDisposition: "form-data; name=\"\(item.token)\"; filename=\"\(item.filename)\"",
+                                            data: item.data)
+                    }
+                } else {
+                    self.log("Extracted HTML empty; falling back to images")
+                    if !fallbackToImages() {
+                        completion(false)
+                        return
+                    }
+                    // Continue to Graph upload below.
                 }
             } else {
-                self.log("Extracted HTML empty; falling back to images")
+                self.log("No extracted HTML; falling back to images")
                 if !fallbackToImages() {
                     completion(false)
                     return
                 }
                 // Continue to Graph upload below.
             }
-        } else {
-            self.log("No extracted HTML; falling back to images")
-            if !fallbackToImages() {
-                completion(false)
-                return
-            }
-            // Continue to Graph upload below.
         }
 
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)

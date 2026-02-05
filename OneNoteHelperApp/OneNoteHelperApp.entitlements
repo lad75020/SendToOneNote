@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>keychain-access-groups</key>
+	<array>
+		<!-- macOS default for MSAL is com.microsoft.identity.universalstorage -->
+		<string>$(AppIdentifierPrefix).com.microsoft.identity.universalstorage</string>
+		<!-- keep ADAL cache group for compatibility -->
+		<string>$(AppIdentifierPrefix).com.microsoft.adalcache</string>
+		<!-- app private group -->
+		<string>$(AppIdentifierPrefix).fr.dubertrand.OneNoteHelperApp</string>
+	</array>
+</dict>
+</plist>

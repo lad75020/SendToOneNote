@@ -1,0 +1,647 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0567450791C2EA6B18BEAFA6 /* GhostscriptXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC1508BEC6B8FD0943CD6FD /* GhostscriptXPCProtocol.swift */; };
+		14B1986735B0BB234FFF164D /* OneNoteGhostscriptXPC in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = 274C56CED76CCC1397CC5CEA /* OneNoteGhostscriptXPC */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3E7BDC979831777621842789 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A9B7CE56D62FC4084968A9 /* Foundation.framework */; };
+		4D9ECDC42F32702B00E097D0 /* BundledSample.pdf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4D9ECDC32F32702B00E097D0 /* BundledSample.pdf */; };
+		A1B2C3D4E5F6A7B8C9D0E301 /* OneNoteHelperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E201 /* OneNoteHelperApp.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E302 /* onenote_backend.c in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E203 /* onenote_backend.c */; };
+		A1B2C3D4E5F6A7B8C9D0E303 /* MSAL in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F6A7B8C9D0E701 /* MSAL */; };
+		AA2CF1E75D39E0862A6EF19F /* GhostscriptXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC1508BEC6B8FD0943CD6FD /* GhostscriptXPCProtocol.swift */; };
+		AC5215896D5590827FFF3211 /* GhostscriptXPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E09264A404D11C69E2D75B /* GhostscriptXPCClient.swift */; };
+		FDFD4DF6C494D225587C4770 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C09E0C66B85B1C2CDDDAD5B /* main.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1B508A8CDBC64355BABBD88D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1B2C3D4E5F6A7B8C9D0E1F2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E99DBE3E7AAE7013477D3BF0;
+			remoteInfo = OneNoteGhostscriptXPC;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4D9ECDC22F326FFF00E097D0 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				4D9ECDC42F32702B00E097D0 /* BundledSample.pdf in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E02E1BE4DC564F5A8480DB2E /* Embed XPC Services */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				14B1986735B0BB234FFF164D /* OneNoteGhostscriptXPC in Embed XPC Services */,
+			);
+			name = "Embed XPC Services";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0C09E0C66B85B1C2CDDDAD5B /* main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = main.swift; path = OneNoteGhostscriptXPC/main.swift; sourceTree = "<group>"; };
+		274C56CED76CCC1397CC5CEA /* OneNoteGhostscriptXPC */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.xpc-service"; name = OneNoteGhostscriptXPC; path = OneNoteGhostscriptXPC.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
+		38E09264A404D11C69E2D75B /* GhostscriptXPCClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GhostscriptXPCClient.swift; sourceTree = "<group>"; };
+		4D06428D2F328B89001E474A /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
+		4D7791532F2FEE85001FC8B6 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		4D9ECDC02F326B7C00E097D0 /* OneNoteHelperApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OneNoteHelperApp.entitlements; sourceTree = "<group>"; };
+		4D9ECDC12F326CA100E097D0 /* BundledSample.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = BundledSample.pdf; sourceTree = "<group>"; };
+		4D9ECDC32F32702B00E097D0 /* BundledSample.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = BundledSample.pdf; path = OneNoteHelperApp/BundledSample.pdf; sourceTree = "<group>"; };
+		9DC1508BEC6B8FD0943CD6FD /* GhostscriptXPCProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GhostscriptXPCProtocol.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E201 /* OneNoteHelperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneNoteHelperApp.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E202 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E203 /* onenote_backend.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = onenote_backend.c; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E204 /* OneNoteHelperApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OneNoteHelperApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D4E5F6A7B8C9D0E205 /* onenote_backend */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = onenote_backend; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9A9B7CE56D62FC4084968A9 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		F44E91403DAA8674E10F9018 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = OneNoteGhostscriptXPC/Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		563ED24B5BD7D8BB0F8A3500 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E7BDC979831777621842789 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1B2C3D4E5F6A7B8C9D0E402 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D4E5F6A7B8C9D0E303 /* MSAL in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		175A593866D26A13F5711CAF /* OneNoteGhostscriptXPC */ = {
+			isa = PBXGroup;
+			children = (
+				0C09E0C66B85B1C2CDDDAD5B /* main.swift */,
+				F44E91403DAA8674E10F9018 /* Info.plist */,
+			);
+			name = OneNoteGhostscriptXPC;
+			sourceTree = SOURCE_ROOT;
+		};
+		257E258015B6FA7B5660C8FC /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				C9A9B7CE56D62FC4084968A9 /* Foundation.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+		5CF2E22631C78F2CB6CADF9F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				257E258015B6FA7B5660C8FC /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F3 = {
+			isa = PBXGroup;
+			children = (
+				4D06428D2F328B89001E474A /* Media.xcassets */,
+				4D9ECDC32F32702B00E097D0 /* BundledSample.pdf */,
+				A1B2C3D4E5F6A7B8C9D0E1F5 /* OneNoteHelperApp */,
+				A1B2C3D4E5F6A7B8C9D0E1F6 /* cups-backend */,
+				A1B2C3D4E5F6A7B8C9D0E1F4 /* Products */,
+				175A593866D26A13F5711CAF /* OneNoteGhostscriptXPC */,
+				5CF2E22631C78F2CB6CADF9F /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F6A7B8C9D0E204 /* OneNoteHelperApp.app */,
+				A1B2C3D4E5F6A7B8C9D0E205 /* onenote_backend */,
+				274C56CED76CCC1397CC5CEA /* OneNoteGhostscriptXPC */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F5 /* OneNoteHelperApp */ = {
+			isa = PBXGroup;
+			children = (
+				4D9ECDC02F326B7C00E097D0 /* OneNoteHelperApp.entitlements */,
+				A1B2C3D4E5F6A7B8C9D0E201 /* OneNoteHelperApp.swift */,
+				A1B2C3D4E5F6A7B8C9D0E202 /* Info.plist */,
+				4D7791532F2FEE85001FC8B6 /* Package.swift */,
+				4D9ECDC12F326CA100E097D0 /* BundledSample.pdf */,
+				9DC1508BEC6B8FD0943CD6FD /* GhostscriptXPCProtocol.swift */,
+				38E09264A404D11C69E2D75B /* GhostscriptXPCClient.swift */,
+			);
+			path = OneNoteHelperApp;
+			sourceTree = SOURCE_ROOT;
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F6 /* cups-backend */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F6A7B8C9D0E203 /* onenote_backend.c */,
+			);
+			path = "cups-backend";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1B2C3D4E5F6A7B8C9D0E501 /* OneNoteHelperApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1B2C3D4E5F6A7B8C9D0E611 /* Build configuration list for PBXNativeTarget "OneNoteHelperApp" */;
+			buildPhases = (
+				A1B2C3D4E5F6A7B8C9D0E401 /* Sources */,
+				A1B2C3D4E5F6A7B8C9D0E402 /* Frameworks */,
+				4D9ECDC22F326FFF00E097D0 /* CopyFiles */,
+				4D1FFAE72F342069003DBDB3 /* ShellScript */,
+				F298149C683A4F67803D85F1 /* Copy Embedded XPC Service */,
+				E02E1BE4DC564F5A8480DB2E /* Embed XPC Services */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DB9832249931422E91B8D18C /* PBXTargetDependency */,
+			);
+			name = OneNoteHelperApp;
+			packageProductDependencies = (
+				A1B2C3D4E5F6A7B8C9D0E701 /* MSAL */,
+			);
+			productName = OneNoteHelperApp;
+			productReference = A1B2C3D4E5F6A7B8C9D0E204 /* OneNoteHelperApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A1B2C3D4E5F6A7B8C9D0E502 /* onenote_backend */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1B2C3D4E5F6A7B8C9D0E621 /* Build configuration list for PBXNativeTarget "onenote_backend" */;
+			buildPhases = (
+				A1B2C3D4E5F6A7B8C9D0E404 /* Sources */,
+				A1B2C3D4E5F6A7B8C9D0E403 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = onenote_backend;
+			productName = onenote_backend;
+			productReference = A1B2C3D4E5F6A7B8C9D0E205 /* onenote_backend */;
+			productType = "com.apple.product-type.tool";
+		};
+		E99DBE3E7AAE7013477D3BF0 /* OneNoteGhostscriptXPC */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EBFBB6215D308251E1AAAB35 /* Build configuration list for PBXNativeTarget "OneNoteGhostscriptXPC" */;
+			buildPhases = (
+				A3284533F0696ECD1A19E4E1 /* Sources */,
+				563ED24B5BD7D8BB0F8A3500 /* Frameworks */,
+				70BBB6A99F9CAEFE5BAAEFF3 /* Resources */,
+				5B37C22E3EE4EFD8F8B5AF38 /* Bundle Ghostscript + deps */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OneNoteGhostscriptXPC;
+			productName = OneNoteGhostscriptXPC;
+			productReference = 274C56CED76CCC1397CC5CEA /* OneNoteGhostscriptXPC */;
+			productType = "com.apple.product-type.xpc-service";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					A1B2C3D4E5F6A7B8C9D0E501 = {
+						CreatedOnToolsVersion = 14.3;
+					};
+					A1B2C3D4E5F6A7B8C9D0E502 = {
+						CreatedOnToolsVersion = 14.3;
+					};
+				};
+			};
+			buildConfigurationList = A1B2C3D4E5F6A7B8C9D0E601 /* Build configuration list for PBXProject "SendToOneNote" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1B2C3D4E5F6A7B8C9D0E1F3;
+			packageReferences = (
+				A1B2C3D4E5F6A7B8C9D0E702 /* XCRemoteSwiftPackageReference "microsoft-authentication-library-for-objc" */,
+			);
+			productRefGroup = A1B2C3D4E5F6A7B8C9D0E1F4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1B2C3D4E5F6A7B8C9D0E501 /* OneNoteHelperApp */,
+				A1B2C3D4E5F6A7B8C9D0E502 /* onenote_backend */,
+				E99DBE3E7AAE7013477D3BF0 /* OneNoteGhostscriptXPC */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		70BBB6A99F9CAEFE5BAAEFF3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4D1FFAE72F342069003DBDB3 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\n\nXPC=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\n\n# locate project root robustly\nROOT=\"${SRCROOT}\"\n\n# Find gs in sources\nSRC_GS=\"$(/usr/bin/find \"$ROOT\" -maxdepth 10 -type f -path \"*/OneNoteHelperApp/Resources/ghostscript/gs\" | /usr/bin/head -n 1)\"\nif [ -z \"$SRC_GS\" ]; then\n  SRC_GS=\"$(/usr/bin/find \"$ROOT\" -maxdepth 10 -type f -path \"*/Resources/ghostscript/gs\" | /usr/bin/head -n 1)\"\nfi\n\necho \"XPC=$XPC\"\necho \"SRC_GS=$SRC_GS\"\n\nif [ -z \"$SRC_GS\" ] || [ ! -f \"$SRC_GS\" ]; then\n  echo \"ERROR: cannot find Resources/ghostscript/gs\" >&2\n  exit 1\nfi\n\nDST_GS=\"${TARGET_BUILD_DIR}/${EXECUTABLE_FOLDER_PATH}/gs\"\necho \"DST_GS=$DST_GS\"\n\ncp -f \"$SRC_GS\" \"$DST_GS\"\nchmod 755 \"$DST_GS\"\n\n# Bundle deps + rewrite install names inside the XPC\npython3 \"$ROOT/OneNoteHelperApp/Scripts/bundle_gs_and_deps.py\" \"$XPC\"\n";
+		};
+		5B37C22E3EE4EFD8F8B5AF38 /* Bundle Ghostscript + deps */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Bundle Ghostscript + deps";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\n\nXPC=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\n\n# locate project root robustly\nROOT=\"${SRCROOT}\"\n\n# Find gs in sources\nSRC_GS=\"$(/usr/bin/find \"$ROOT\" -maxdepth 10 -type f -path \"*/OneNoteHelperApp/Resources/ghostscript/gs\" | /usr/bin/head -n 1)\"\nif [ -z \"$SRC_GS\" ]; then\n  SRC_GS=\"$(/usr/bin/find \"$ROOT\" -maxdepth 10 -type f -path \"*/Resources/ghostscript/gs\" | /usr/bin/head -n 1)\"\nfi\n\necho \"XPC=$XPC\"\necho \"SRC_GS=$SRC_GS\"\n\nif [ -z \"$SRC_GS\" ] || [ ! -f \"$SRC_GS\" ]; then\n  echo \"ERROR: cannot find Resources/ghostscript/gs\" >&2\n  exit 1\nfi\n\nDST_GS=\"${TARGET_BUILD_DIR}/${EXECUTABLE_FOLDER_PATH}/gs\"\necho \"DST_GS=$DST_GS\"\n\ncp -f \"$SRC_GS\" \"$DST_GS\"\nchmod 755 \"$DST_GS\"\n\n# Bundle deps + rewrite install names inside the XPC\npython3 \"$ROOT/OneNoteHelperApp/Scripts/bundle_gs_and_deps.py\" \"$XPC\"
+";
+		};
+		A1B2C3D4E5F6A7B8C9D0E403 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/onenote_backend",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				/usr/libexec/cups/backend/onenote_backend,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\ninstall -m 0755 \"$(BUILT_PRODUCTS_DIR)/onenote_backend\" \"/usr/libexec/cups/backend/onenote_backend\"";
+		};
+		F298149C683A4F67803D85F1 /* Copy Embedded XPC Service */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/OneNoteGhostscriptXPC.xpc",
+			);
+			name = "Copy Embedded XPC Service";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(FULL_PRODUCT_NAME)/Contents/XPCServices/OneNoteGhostscriptXPC.xpc",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\n\nSRC=\"${BUILT_PRODUCTS_DIR}/OneNoteGhostscriptXPC.xpc\"\nDST_DIR=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/Contents/XPCServices\"\nDST=\"${DST_DIR}/OneNoteGhostscriptXPC.xpc\"\n\necho \"Embedding XPC service\"\necho \"SRC=${SRC}\"\necho \"DST=${DST}\"\n\nif [ ! -d \"${SRC}\" ]; then\n  echo \"ERROR: XPC service not built at ${SRC}\" >&2\n  exit 1\nfi\n\nmkdir -p \"${DST_DIR}\"\n/usr/bin/ditto \"${SRC}\" \"${DST}\"\n";
+		};
+
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A1B2C3D4E5F6A7B8C9D0E401 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D4E5F6A7B8C9D0E301 /* OneNoteHelperApp.swift in Sources */,
+				0567450791C2EA6B18BEAFA6 /* GhostscriptXPCProtocol.swift in Sources */,
+				AC5215896D5590827FFF3211 /* GhostscriptXPCClient.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1B2C3D4E5F6A7B8C9D0E404 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D4E5F6A7B8C9D0E302 /* onenote_backend.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A3284533F0696ECD1A19E4E1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FDFD4DF6C494D225587C4770 /* main.swift in Sources */,
+				AA2CF1E75D39E0862A6EF19F /* GhostscriptXPCProtocol.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DB9832249931422E91B8D18C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E99DBE3E7AAE7013477D3BF0 /* OneNoteGhostscriptXPC */;
+			targetProxy = 1B508A8CDBC64355BABBD88D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		565D0C24B5DCFC46F40850C7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RJYVGK9S3F;
+				INFOPLIST_FILE = OneNoteGhostscriptXPC/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dubertrand.OneNoteGhostscriptXPC;
+				PRODUCT_MODULE_NAME = OneNoteGhostscriptXPC;
+				PRODUCT_NAME = OneNoteGhostscriptXPC;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		A1B2C3D4E5F6A7B8C9D0E602 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A1B2C3D4E5F6A7B8C9D0E603 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A1B2C3D4E5F6A7B8C9D0E612 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				AUTOMATION_APPLE_EVENTS = NO;
+				CODE_SIGN_ENTITLEMENTS = OneNoteHelperApp/OneNoteHelperApp.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_ASSET_PATHS = Media.xcassets;
+				DEVELOPMENT_TEAM = RJYVGK9S3F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = OneNoteHelperApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "OneNote Print Helper";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "";
+				"INFOPLIST_KEY_UIRequiredDeviceCapabilities[sdk=*]" = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dubertrand.OneNoteHelperApp;
+				PRODUCT_NAME = OneNoteHelperApp;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A1B2C3D4E5F6A7B8C9D0E613 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				AUTOMATION_APPLE_EVENTS = NO;
+				CODE_SIGN_ENTITLEMENTS = OneNoteHelperApp/OneNoteHelperApp.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_ASSET_PATHS = Media.xcassets;
+				DEVELOPMENT_TEAM = RJYVGK9S3F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = OneNoteHelperApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "OneNote Print Helper";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dubertrand.OneNoteHelperApp;
+				PRODUCT_NAME = OneNoteHelperApp;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A1B2C3D4E5F6A7B8C9D0E622 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_NAME = onenote_backend;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A1B2C3D4E5F6A7B8C9D0E623 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_NAME = onenote_backend;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F881381A11A37606DFDD9815 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RJYVGK9S3F;
+				INFOPLIST_FILE = OneNoteGhostscriptXPC/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dubertrand.OneNoteGhostscriptXPC;
+				PRODUCT_MODULE_NAME = OneNoteGhostscriptXPC;
+				PRODUCT_NAME = OneNoteGhostscriptXPC;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1B2C3D4E5F6A7B8C9D0E601 /* Build configuration list for PBXProject "SendToOneNote" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D4E5F6A7B8C9D0E602 /* Debug */,
+				A1B2C3D4E5F6A7B8C9D0E603 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1B2C3D4E5F6A7B8C9D0E611 /* Build configuration list for PBXNativeTarget "OneNoteHelperApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D4E5F6A7B8C9D0E612 /* Debug */,
+				A1B2C3D4E5F6A7B8C9D0E613 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1B2C3D4E5F6A7B8C9D0E621 /* Build configuration list for PBXNativeTarget "onenote_backend" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D4E5F6A7B8C9D0E622 /* Debug */,
+				A1B2C3D4E5F6A7B8C9D0E623 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EBFBB6215D308251E1AAAB35 /* Build configuration list for PBXNativeTarget "OneNoteGhostscriptXPC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				565D0C24B5DCFC46F40850C7 /* Release */,
+				F881381A11A37606DFDD9815 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1B2C3D4E5F6A7B8C9D0E702 /* XCRemoteSwiftPackageReference "microsoft-authentication-library-for-objc" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AzureAD/microsoft-authentication-library-for-objc.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1B2C3D4E5F6A7B8C9D0E701 /* MSAL */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F6A7B8C9D0E702 /* XCRemoteSwiftPackageReference "microsoft-authentication-library-for-objc" */;
+			productName = MSAL;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A1B2C3D4E5F6A7B8C9D0E1F2 /* Project object */;
+}

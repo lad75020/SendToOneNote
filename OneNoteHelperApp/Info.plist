@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>OneNote Helper</string>
+	<key>CFBundleExecutable</key>
+	<string>OneNoteHelperApp</string>
+	<key>CFBundleIdentifier</key>
+	<string>fr.dubertrand.OneNoteHelperApp</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>OneNoteHelperApp</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>fr.dubertrand.OneNoteHelperApp.msal</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>msal0ebbf499-a791-414b-9940-806e5466572f</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>fr.dubertrand.OneNoteHelperApp.url</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>onenote-helper</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>15.6</string>
+	<key>MSALClientId</key>
+	<string>0ebbf499-a791-414b-9940-806e5466572f</string>
+	<key>MSALRedirectUri</key>
+	<string>msal0ebbf499-a791-414b-9940-806e5466572f://auth</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>

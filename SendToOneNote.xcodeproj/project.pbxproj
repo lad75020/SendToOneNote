@@ -16,6 +16,14 @@
 		A1B2C3D4E5F6A7B8C9D0E303 /* MSAL in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F6A7B8C9D0E701 /* MSAL */; };
 		AA2CF1E75D39E0862A6EF19F /* GhostscriptXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC1508BEC6B8FD0943CD6FD /* GhostscriptXPCProtocol.swift */; };
 		AC5215896D5590827FFF3211 /* GhostscriptXPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E09264A404D11C69E2D75B /* GhostscriptXPCClient.swift */; };
+		8EE427ED80084D92B50F69A1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6AFABAFD704029961618B4 /* AppDelegate.swift */; };
+		96B74793F6044AAC809FA946 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8235E90FD86C406689F9E158 /* ContentView.swift */; };
+		8235E90FD86C406689F9E158 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		EF836CFA84524B758E201A22 /* MainApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8952C853DEBF48B99F66625A /* MainApp.swift */; };
+		8952C853DEBF48B99F66625A /* MainApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainApp.swift; sourceTree = "<group>"; };
+		B6E6AA224F6045448DBE07F5 /* Stores.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3336CD0711244D595138959 /* Stores.swift */; };
+		D3336CD0711244D595138959 /* Stores.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Stores.swift; sourceTree = "<group>"; };
+		9E6AFABAFD704029961618B4 /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FDFD4DF6C494D225587C4770 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C09E0C66B85B1C2CDDDAD5B /* main.swift */; };
 /* End PBXBuildFile section */
 
@@ -144,6 +152,10 @@
 			isa = PBXGroup;
 			children = (
 				4D9ECDC02F326B7C00E097D0 /* OneNoteHelperApp.entitlements */,
+				9E6AFABAFD704029961618B4 /* AppDelegate.swift */,
+				8235E90FD86C406689F9E158 /* ContentView.swift */,
+				8952C853DEBF48B99F66625A /* MainApp.swift */,
+				D3336CD0711244D595138959 /* Stores.swift */,
 				A1B2C3D4E5F6A7B8C9D0E201 /* OneNoteHelperApp.swift */,
 				A1B2C3D4E5F6A7B8C9D0E202 /* Info.plist */,
 				4D7791532F2FEE85001FC8B6 /* Package.swift */,
@@ -357,6 +369,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B2C3D4E5F6A7B8C9D0E301 /* OneNoteHelperApp.swift in Sources */,
+				8EE427ED80084D92B50F69A1 /* AppDelegate.swift in Sources */,
+				96B74793F6044AAC809FA946 /* ContentView.swift in Sources */,
+				EF836CFA84524B758E201A22 /* MainApp.swift in Sources */,
+				B6E6AA224F6045448DBE07F5 /* Stores.swift in Sources */,
 				0567450791C2EA6B18BEAFA6 /* GhostscriptXPCProtocol.swift in Sources */,
 				AC5215896D5590827FFF3211 /* GhostscriptXPCClient.swift in Sources */,
 			);

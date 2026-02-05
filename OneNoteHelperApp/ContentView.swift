@@ -119,7 +119,8 @@ struct ContentView: View {
         let watchPath = effectiveWatchFolderPath()
         let watchExists = FileManager.default.fileExists(atPath: watchPath)
 
-        VStack(alignment: .leading, spacing: 14) {
+        ScrollView(.vertical) {
+            VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Image(systemName: "note.text")
                     .font(.title2)
@@ -347,6 +348,8 @@ struct ContentView: View {
             }
         }
         .padding(16)
+        }
+        .scrollIndicators(.visible)
         .background(pageBackground)
         .frame(minWidth: 640, minHeight: showLogs ? 640 : 360)
     }

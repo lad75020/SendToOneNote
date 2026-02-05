@@ -725,11 +725,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let boundary = "----onenote-\(UUID().uuidString)"
         var body = Data()
 
-        func fallbackToImages() {
+        func fallbackToImages() -> Bool {
             guard let images = self.renderPDFAsPNGs(fileURL: effectiveURL, maxPages: min(maxPages, 30), scale: renderScale), !images.isEmpty else {
-                log("Failed to extract text or render PDF at \(filePath)")
-                completion(false)
-                return
+                self.log("Failed to extract text or render PDF at \(filePath)")
+                return false
             }
 
             self.log("Upload: preparing IMAGE page for sectionId=\(UserDefaults.standard.string(forKey: targetSectionIdKey) ?? "(default)") title=\(pageTitle) renderedPages=\(images.count)")
@@ -768,6 +767,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                     contentDisposition: "form-data; name=\"\(item.token)\"; filename=\"\(item.filename)\"",
                                     data: item.data)
             }
+
+            return true
         }
 
         if let pagesHTMLRaw = self.extractPDFPagesAsHTMLBodies(fileURL: effectiveURL, maxPages: maxPages) {
@@ -856,13 +857,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             } else {
                 self.log("Extracted HTML empty; falling back to images")
-                fallbackToImages()
-                return
+                if !fallbackToImages() {
+                    completion(false)
+                    return
+                }
+                // Continue to Graph upload below.
             }
         } else {
             self.log("No extracted HTML; falling back to images")
-            fallbackToImages()
-            return
+            if !fallbackToImages() {
+                completion(false)
+                return
+            }
+            // Continue to Graph upload below.
         }
 
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)

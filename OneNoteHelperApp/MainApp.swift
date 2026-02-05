@@ -8,6 +8,7 @@ struct OneNoteHelperApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .tint(.blue)
         }
     }
 }

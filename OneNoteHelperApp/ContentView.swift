@@ -3,7 +3,8 @@ import AppKit
 import Foundation
 
 struct ContentView: View {
-    @State private var status: String = "Waiting for print jobs..."
+    @Environment(\.colorScheme) private var colorScheme
+
     @State private var showLogs: Bool = false
     @StateObject private var logs = LogStore.shared
     @StateObject private var sections = SectionStore.shared
@@ -14,6 +15,59 @@ struct ContentView: View {
     /// - text: upload extracted text only.
     /// - hybrid: current default (text + embedded images when found; falls back to rendered pages if needed).
     @AppStorage("ImportMode") private var importMode: String = "hybrid"
+
+    // MARK: - Theme
+
+    private var pageBackground: Color {
+        // Slightly tinted blue background, adaptive.
+        colorScheme == .dark
+            ? Color(red: 0.06, green: 0.10, blue: 0.18)
+            : Color(red: 0.92, green: 0.96, blue: 1.0)
+    }
+
+    private var panelBackground: Color {
+        // Fallback solid color if material isn't desired.
+        colorScheme == .dark
+            ? Color(red: 0.09, green: 0.14, blue: 0.24)
+            : Color.white.opacity(0.90)
+    }
+
+    private var panelShadow: Color {
+        colorScheme == .dark ? Color.black.opacity(0.35) : Color.black.opacity(0.08)
+    }
+
+    private var primaryText: Color {
+        colorScheme == .dark ? Color(red: 0.92, green: 0.96, blue: 1.0) : .black
+    }
+
+    private var secondaryText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.75) : .black.opacity(0.6)
+    }
+
+    private var accentGray: Color {
+        colorScheme == .dark ? Color.white.opacity(0.22) : Color.black.opacity(0.18)
+    }
+
+    @ViewBuilder
+    private func panel<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(primaryText)
+
+            content()
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.regularMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(accentGray, lineWidth: 1)
+        )
+        .shadow(color: panelShadow, radius: 10, x: 0, y: 4)
+    }
 
     private func effectiveClientId() -> String {
         let v = ((Bundle.main.object(forInfoDictionaryKey: "MSALClientId") as? String) ?? UserDefaults.standard.string(forKey: "MSALClientId") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
@@ -65,89 +119,105 @@ struct ContentView: View {
         let watchPath = effectiveWatchFolderPath()
         let watchExists = FileManager.default.fileExists(atPath: watchPath)
 
-        VStack(alignment: .leading, spacing: 12) {
-            Text("OneNote Helper")
-                .font(.title2)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Image(systemName: "note.text")
+                    .font(.title2)
+                    .foregroundStyle(Color.blue)
+                    .accessibilityHidden(true)
 
-            Text(status)
-                .font(.body)
-                .foregroundStyle(.secondary)
+                Text("OneNote Helper")
+                    .font(.title2)
+                    .foregroundStyle(primaryText)
 
-            GroupBox("Microsoft Graph / MSAL") {
-                VStack(alignment: .leading, spacing: 8) {
+                Spacer()
+
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                        .opacity(logs.activityState == .waiting ? 0 : 1)
+
+                    Text(logs.activityState == .waiting ? "Waiting for print jobs…" : "\(logs.activityState.label)…")
+                        .font(.callout)
+                        .foregroundStyle(secondaryText)
+                        .help("Current activity: \(logs.activityState.label)")
+                }
+            }
+
+            panel(title: "Microsoft Graph / MSAL") {
+                VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text("MSAL Client ID")
                             .frame(width: 140, alignment: .leading)
+                            .foregroundStyle(primaryText)
                         TextField("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", text: $settings.msalClientId)
+                            .textFieldStyle(.roundedBorder)
+                            .help("Azure AD application (client) ID used for MSAL sign-in.")
                     }
 
                     HStack {
                         Text("MSAL Redirect URI")
                             .frame(width: 140, alignment: .leading)
+                            .foregroundStyle(primaryText)
                         TextField("msauth.<bundleId>://auth", text: $settings.msalRedirectUri)
+                            .textFieldStyle(.roundedBorder)
+                            .help("Redirect URI configured in Azure for this app (msauth.<bundle-id>://auth).")
                     }
                     HStack {
                         Text("MSAL Authority")
                             .frame(width: 140, alignment: .leading)
+                            .foregroundStyle(primaryText)
                         TextField("https://login.microsoftonline.com/organizations", text: $settings.msalAuthority)
+                            .textFieldStyle(.roundedBorder)
+                            .help("Authority used for sign-in. Use /organizations or your tenant URL.")
                     }
 
-                    HStack {
+                    HStack(spacing: 10) {
                         Button("Save") {
                             settings.save()
                             LogStore.shared.append("Saved MSAL settings")
                         }
+                        .buttonStyle(.bordered)
+                        .controlSize(.regular)
+                        .help("Save MSAL settings (Client ID / Redirect URI / Authority).")
 
                         Button("Sign in") {
                             settings.save()
                             AppDelegate.shared?.signIn()
                         }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.regular)
+                        .help("Authenticate with Microsoft so the app can call the Graph API.")
 
                         Spacer()
                     }
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 8) {
-                            Circle().fill(cid.isEmpty ? Color.red : Color.green).frame(width: 8, height: 8)
-                            Text("Client ID: \(cid.isEmpty ? "(missing)" : cid)")
-                        }
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 10) {
+                        Circle().fill(cid.isEmpty ? Color.red : Color.blue).frame(width: 8, height: 8)
+                            .help(cid.isEmpty ? "Missing MSAL Client ID" : "MSAL Client ID configured")
+                        Circle().fill(redirect.isEmpty ? Color.red : Color.blue).frame(width: 8, height: 8)
+                            .help(redirect.isEmpty ? "Missing Redirect URI" : "Redirect URI configured")
+                        Circle().fill(authority.isEmpty ? Color.red : Color.blue).frame(width: 8, height: 8)
+                            .help(authority.isEmpty ? "Missing Authority" : "Authority configured")
+                        Circle().fill(schemeOK ? Color.blue : Color.red).frame(width: 8, height: 8)
+                            .help(schemeOK ? "URL scheme registered" : "URL scheme not registered (Info.plist)")
 
-                        HStack(spacing: 8) {
-                            Circle().fill(redirect.isEmpty ? Color.red : Color.green).frame(width: 8, height: 8)
-                            Text("Redirect URI: \(redirect.isEmpty ? "(missing)" : redirect)")
-                        }
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-
-                        HStack(spacing: 8) {
-                            Circle().fill(authority.isEmpty ? Color.red : Color.green).frame(width: 8, height: 8)
-                            Text("Authority: \(authority.isEmpty ? "(missing)" : authority)")
-                        }
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-
-                        HStack(spacing: 8) {
-                            Circle().fill(schemeOK ? Color.green : Color.red).frame(width: 8, height: 8)
-                            Text("URL scheme registered: \(scheme.isEmpty ? "(none)" : scheme)\(schemeOK ? "" : " (add to Info.plist)")")
-                        }
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        Spacer()
                     }
+                    .padding(.top, 2)
 
-                    Text("Tip: If Sign in shows a web login, complete it once. Afterwards, Refresh can use silent auth. If your app is single-tenant, set MSAL Authority to your tenant endpoint (not /common), e.g. https://login.microsoftonline.com/<tenant-id>.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
                 }
             }
 
-            GroupBox("Watch folder") {
-                VStack(alignment: .leading, spacing: 8) {
+            panel(title: "Watch folder") {
+                VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text("Root path")
                             .frame(width: 140, alignment: .leading)
+                            .foregroundStyle(primaryText)
                         TextField("/Users/Shared/OneNoteHelper", text: $settings.watchFolderPath)
+                            .textFieldStyle(.roundedBorder)
+                            .help("Root folder that contains Incoming/Processing/Done/Failed.")
 
                         Button("Browse…") {
                             // Ensure we have a visible UI before presenting the open panel.
@@ -175,6 +245,8 @@ struct ContentView: View {
                                 handle(panel.runModal())
                             }
                         }
+                        .buttonStyle(.bordered)
+                        .help("Pick the watch folder on disk.")
                     }
 
                     HStack {
@@ -183,80 +255,71 @@ struct ContentView: View {
                             LogStore.shared.append("Saved watch folder: \(settings.watchFolderPath)")
                             AppDelegate.shared?.restartWatchingIncomingFolder()
                         }
+                        .buttonStyle(.borderedProminent)
+                        .help("Save the folder path and restart the incoming print-job watcher.")
 
                         Spacer()
-                    }
 
-                    HStack(spacing: 8) {
-                        Circle().fill(watchExists ? Color.green : Color.red).frame(width: 8, height: 8)
-                        Text("Effective: \(watchPath)\(watchExists ? "" : " (missing)")")
+                        // Compact status indicator
+                        Label(watchExists ? "Ready" : "Missing", systemImage: watchExists ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                            .font(.footnote)
+                            .foregroundStyle(watchExists ? Color.blue : Color.red)
+                            .help("Effective watch folder: \(watchPath)")
                     }
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-
-                    Text("This folder must contain Incoming/Processing/Done/Failed. The CUPS backend should drop job-*.pdf + job-*.json into Incoming.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
                 }
             }
 
-            GroupBox("Import mode") {
-                VStack(alignment: .leading, spacing: 8) {
+            panel(title: "Import mode") {
+                VStack(alignment: .leading, spacing: 10) {
                     Picker("Mode", selection: $importMode) {
                         Text("Image").tag("image")
                         Text("Text").tag("text")
                         Text("Hybrid").tag("hybrid")
                     }
                     .pickerStyle(.segmented)
-
-                    Text("Image: upload rendered pages as images only.  Text: upload extracted text only.  Hybrid: text + embedded images when available (fallback to rendered pages if needed).")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    .controlSize(.regular)
+                    .help("Choose how pages are generated in OneNote: images only, text only, or hybrid.")
                 }
             }
 
-            GroupBox("Target section (all notebooks)") {
-                HStack {
-                    Button(sections.isLoading ? "Loading…" : "Refresh") {
-                        sections.refresh()
+            panel(title: "Target section") {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Button(sections.isLoading ? "Loading…" : "Refresh") {
+                            sections.refresh()
+                        }
+                        .disabled(sections.isLoading)
+                        .buttonStyle(.bordered)
+                        .help("Load all OneNote sections and refresh the list.")
+
+                        Spacer()
+
+                        if let name = UserDefaults.standard.string(forKey: "TargetSectionName") {
+                            Text(name)
+                                .foregroundStyle(secondaryText)
+                                .help("Currently selected section.")
+                        }
                     }
-                    .disabled(sections.isLoading)
 
-                    Spacer()
-
-                    if let name = UserDefaults.standard.string(forKey: "TargetSectionName") {
-                        Text("Selected: \(name)")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                if sections.sections.isEmpty {
-                    Text("No sections loaded yet. Click Refresh.")
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 6)
-                } else {
                     Picker("Section", selection: Binding(get: {
                         sections.selectedSectionId ?? ""
                     }, set: { newValue in
                         sections.selectedSectionId = newValue.isEmpty ? nil : newValue
                     })) {
+                        Text("(None)").tag("")
                         ForEach(sections.sections) { s in
                             Text(s.name).tag(s.id)
                         }
                     }
                     .pickerStyle(.menu)
-                    .padding(.top, 6)
-
-                    Text("Print jobs will be uploaded to the selected section as a page titled \"Sent To OneNote\".")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 4)
+                    .help("Where new OneNote pages will be created.")
                 }
             }
 
             HStack {
                 Toggle("Show logs", isOn: $showLogs)
                     .toggleStyle(.switch)
+                    .help("Show or hide detailed logs.")
 
                 Spacer()
 
@@ -264,38 +327,28 @@ struct ContentView: View {
                     logs.clear()
                 }
                 .disabled(logs.text.isEmpty)
+                .help("Clear the log view.")
 
-                Button("Test URL Handler") {
-                    if let pdfURL = Bundle.main.url(forResource: "BundledSample", withExtension: "pdf") {
-                        var comps = URLComponents()
-                        comps.scheme = "onenote-helper"
-                        comps.host = "import"
-                        comps.queryItems = [
-                            URLQueryItem(name: "file", value: pdfURL.path),
-                            URLQueryItem(name: "title", value: "Bundled Sample"),
-                            URLQueryItem(name: "user", value: "user"),
-                            URLQueryItem(name: "job", value: "demo")
-                        ]
-                        if let url = comps.url {
-                            NSApplication.shared.delegate?.application?(NSApplication.shared, open: [url])
-                        } else {
-                            LogStore.shared.append("ERROR: Failed to build test URL")
-                        }
-                    } else {
-                        LogStore.shared.append("ERROR: BundledSample.pdf not found in bundle resources")
-                    }
-                }
             }
 
             if showLogs {
                 TextEditor(text: $logs.text)
                     .font(.system(.body, design: .monospaced))
                     .frame(minHeight: 240)
-                    .border(Color.secondary.opacity(0.35))
+                    .padding(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(colorScheme == .dark ? Color.black.opacity(0.18) : Color.white.opacity(0.75))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(accentGray, lineWidth: 1)
+                    )
             }
         }
-        .padding()
-        .frame(minWidth: 620, minHeight: showLogs ? 620 : 340)
+        .padding(16)
+        .background(pageBackground)
+        .frame(minWidth: 640, minHeight: showLogs ? 640 : 360)
     }
 }
 

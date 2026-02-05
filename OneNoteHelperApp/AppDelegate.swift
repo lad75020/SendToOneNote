@@ -218,6 +218,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func importFile(filePath: String, title: String, user: String, job: String, completion: ((Bool) -> Void)?) {
         log("Preparing upload: file=\(filePath) title=\(title) user=\(user) job=\(job)")
+        LogStore.shared.activityState = .processing
 
         let showUIOnImport = UserDefaults.standard.bool(forKey: "ShowUIOnImport")
         if showUIOnImport {
@@ -236,11 +237,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         acquireGraphToken { token in
             guard let token else {
+                LogStore.shared.activityState = .waiting
                 completion?(false)
                 return
             }
             self.log("Graph token acquired (len=\(token.count))")
+            LogStore.shared.activityState = .uploading
             self.uploadSinglePage(token: token, filePath: filePath, title: title, user: user, job: job) { ok in
+                LogStore.shared.activityState = .waiting
                 completion?(ok)
             }
         }

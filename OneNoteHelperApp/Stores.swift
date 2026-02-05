@@ -7,7 +7,22 @@ import Foundation
 final class LogStore: ObservableObject {
     static let shared = LogStore()
 
+    enum ActivityState: String {
+        case waiting
+        case processing
+        case uploading
+
+        var label: String {
+            switch self {
+            case .waiting: return "Waiting"
+            case .processing: return "Processing"
+            case .uploading: return "Uploading"
+            }
+        }
+    }
+
     @Published var text: String = ""
+    @Published var activityState: ActivityState = .waiting
 
     private let df: DateFormatter = {
         let d = DateFormatter()

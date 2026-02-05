@@ -133,6 +133,13 @@ struct ContentView: View {
 
                 Spacer()
 
+                Button("Quit") {
+                    NSApp.terminate(nil)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .help("Quit OneNote Helper")
+
                 HStack(spacing: 8) {
                     ProgressView()
                         .controlSize(.small)

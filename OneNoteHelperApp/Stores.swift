@@ -132,60 +132,158 @@ final class SettingsStore: ObservableObject {
 }
 
 @MainActor
-final class SectionStore: ObservableObject {
-    struct Section: Identifiable, Hashable {
-        let id: String
-        let name: String
-    }
+final class OneNoteTargetStore: ObservableObject {
+    struct Notebook: Identifiable, Hashable { let id: String; let name: String }
+    struct Section: Identifiable, Hashable { let id: String; let name: String }
+    struct Page: Identifiable, Hashable { let id: String; let title: String }
 
-    static let shared = SectionStore()
+    static let shared = OneNoteTargetStore()
 
-    // AppDelegate registers itself here on launch.
     private weak var appDelegate: AppDelegate?
 
+    @Published var notebooks: [Notebook] = []
     @Published var sections: [Section] = []
+    @Published var pages: [Page] = []
+
     @Published var isLoading: Bool = false
+
+    @Published var selectedNotebookId: String? {
+        didSet {
+            UserDefaults.standard.set(selectedNotebookId, forKey: "TargetNotebookId")
+            if let id = selectedNotebookId, let nb = notebooks.first(where: { $0.id == id }) {
+                UserDefaults.standard.set(nb.name, forKey: "TargetNotebookName")
+            }
+            // Changing notebook invalidates section/page selections.
+            if oldValue != selectedNotebookId {
+                selectedSectionId = nil
+                selectedPageId = nil
+                sections = []
+                pages = []
+                refreshSectionsForSelectedNotebook()
+            }
+        }
+    }
+
     @Published var selectedSectionId: String? {
         didSet {
             UserDefaults.standard.set(selectedSectionId, forKey: "TargetSectionId")
             if let id = selectedSectionId, let sec = sections.first(where: { $0.id == id }) {
                 UserDefaults.standard.set(sec.name, forKey: "TargetSectionName")
             }
+            // Changing section invalidates page selection.
+            if oldValue != selectedSectionId {
+                selectedPageId = nil
+                pages = []
+                refreshPagesForSelectedSection()
+            }
         }
     }
 
+    /// nil means "None" (create new pages). If set, append to that page.
+    @Published var selectedPageId: String? {
+        didSet {
+            UserDefaults.standard.set(selectedPageId, forKey: "TargetPageId")
+            if let id = selectedPageId, let page = pages.first(where: { $0.id == id }) {
+                UserDefaults.standard.set(page.title, forKey: "TargetPageTitle")
+            }
+        }
+    }
+
+    var selectionSummary: String? {
+        let nb = UserDefaults.standard.string(forKey: "TargetNotebookName")
+        let sec = UserDefaults.standard.string(forKey: "TargetSectionName")
+        let page = UserDefaults.standard.string(forKey: "TargetPageTitle")
+        if let nb, !nb.isEmpty, let sec, !sec.isEmpty {
+            if let pid = UserDefaults.standard.string(forKey: "TargetPageId"), !pid.isEmpty {
+                return "\(nb) / \(sec) / \(page ?? "(page)")"
+            }
+            return "\(nb) / \(sec) / (new pages)"
+        }
+        return nil
+    }
+
     init() {
+        self.selectedNotebookId = UserDefaults.standard.string(forKey: "TargetNotebookId")
         self.selectedSectionId = UserDefaults.standard.string(forKey: "TargetSectionId")
+        self.selectedPageId = UserDefaults.standard.string(forKey: "TargetPageId")
     }
 
     func register(appDelegate: AppDelegate) {
         self.appDelegate = appDelegate
     }
 
-    func refresh() {
+    func refreshAll() {
+        refreshNotebooks()
+    }
+
+    func refreshNotebooks() {
         guard let appDelegate else {
             LogStore.shared.append("ERROR: AppDelegate not registered yet")
             return
         }
-
-        LogStore.shared.append("Refreshing OneNote sections…")
+        LogStore.shared.append("Refreshing OneNote notebooks…")
         isLoading = true
-        appDelegate.fetchSectionsInDefaultNotebook { result in
+        appDelegate.fetchNotebooks { result in
             Task { @MainActor in
-                self.isLoading = false
                 switch result {
-                case .success(let sections):
-                    LogStore.shared.append("Loaded \(sections.count) section(s)")
-                    self.sections = sections
-                    // Keep selection if still present, else default to first.
-                    if let current = self.selectedSectionId, sections.contains(where: { $0.id == current }) {
+                case .success(let items):
+                    self.notebooks = items
+                    // Keep existing selection if valid, else default to first.
+                    if let current = self.selectedNotebookId, items.contains(where: { $0.id == current }) {
                         // ok
                     } else {
-                        self.selectedSectionId = sections.first?.id
+                        self.selectedNotebookId = items.first?.id
+                    }
+                case .failure(let err):
+                    LogStore.shared.append("ERROR: failed to load notebooks: \(err.localizedDescription)")
+                }
+                self.isLoading = false
+            }
+        }
+    }
+
+    private func refreshSectionsForSelectedNotebook() {
+        guard let appDelegate else { return }
+        guard let nbId = selectedNotebookId, !nbId.isEmpty else { return }
+
+        LogStore.shared.append("Refreshing sections for notebook…")
+        isLoading = true
+        appDelegate.fetchSections(notebookId: nbId) { result in
+            Task { @MainActor in
+                switch result {
+                case .success(let items):
+                    self.sections = items
+                    // Default to first section if none.
+                    if let current = self.selectedSectionId, items.contains(where: { $0.id == current }) {
+                        // ok
+                    } else {
+                        self.selectedSectionId = items.first?.id
                     }
                 case .failure(let err):
                     LogStore.shared.append("ERROR: failed to load sections: \(err.localizedDescription)")
                 }
+                self.isLoading = false
+            }
+        }
+    }
+
+    private func refreshPagesForSelectedSection() {
+        guard let appDelegate else { return }
+        guard let secId = selectedSectionId, !secId.isEmpty else { return }
+
+        LogStore.shared.append("Refreshing pages for section…")
+        isLoading = true
+        appDelegate.fetchPages(sectionId: secId) { result in
+            Task { @MainActor in
+                switch result {
+                case .success(let items):
+                    self.pages = items
+                    // Always default page selection to "None".
+                    self.selectedPageId = nil
+                case .failure(let err):
+                    LogStore.shared.append("ERROR: failed to load pages: \(err.localizedDescription)")
+                }
+                self.isLoading = false
             }
         }
     }

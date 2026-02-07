@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // Graph selection storage
     private let targetSectionIdKey = "TargetSectionId"
+    private let targetPageIdKey = "TargetPageId"
 
     private var dirSource: DispatchSourceFileSystemObject?
     private var pollTimer: DispatchSourceTimer?
@@ -183,11 +184,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppDelegate.shared = self
-        SectionStore.shared.register(appDelegate: self)
+        OneNoteTargetStore.shared.register(appDelegate: self)
         resolveAndStartSecurityScopedAccessIfNeeded()
         startWatchingIncomingFolder()
         Task { @MainActor in
-            SectionStore.shared.refresh()
+            OneNoteTargetStore.shared.refreshAll()
             self.keychainSanityCheck()
         }
     }
@@ -491,18 +492,60 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Graph API helpers
 
-    func fetchSectionsInDefaultNotebook(completion: @escaping (Result<[SectionStore.Section], Error>) -> Void) {
-        // Fetch all sections across all notebooks, including those inside section groups, by querying the global sections endpoint
-        // and expanding the parentNotebook to get its displayName. Follow @odata.nextLink for pagination.
+    func fetchNotebooks(completion: @escaping (Result<[OneNoteTargetStore.Notebook], Error>) -> Void) {
         acquireGraphToken { token in
             guard let token else {
                 completion(.failure(NSError(domain: "OneNoteHelper", code: 401)))
                 return
             }
 
-            struct SectionsResponse: Decodable {
-                struct ParentNotebook: Decodable { let id: String; let displayName: String? }
-                struct Section: Decodable { let id: String; let displayName: String?; let parentNotebook: ParentNotebook? }
+            struct Response: Decodable {
+                struct Notebook: Decodable { let id: String; let displayName: String? }
+                let value: [Notebook]
+                let nextLink: String?
+                private enum CodingKeys: String, CodingKey {
+                    case value
+                    case nextLink = "@odata.nextLink"
+                }
+            }
+
+            func fetchPage(urlString: String, accum: [OneNoteTargetStore.Notebook]) {
+                self.graphGET(token: token, url: urlString) { result in
+                    switch result {
+                    case .failure(let err):
+                        completion(.failure(err))
+                    case .success(let data):
+                        guard let resp = try? JSONDecoder().decode(Response.self, from: data) else {
+                            let payload = String(data: data, encoding: .utf8) ?? ""
+                            self.log("Notebooks decode failed. Payload: \(payload)")
+                            completion(.failure(NSError(domain: "OneNoteHelper", code: 500)))
+                            return
+                        }
+                        let mapped = resp.value.map { OneNoteTargetStore.Notebook(id: $0.id, name: $0.displayName ?? $0.id) }
+                        let total = accum + mapped
+                        if let next = resp.nextLink {
+                            fetchPage(urlString: next, accum: total)
+                        } else {
+                            completion(.success(total.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }))
+                        }
+                    }
+                }
+            }
+
+            let first = self.graphURL("me/onenote/notebooks?$select=id,displayName&$top=200")
+            fetchPage(urlString: first, accum: [])
+        }
+    }
+
+    func fetchSections(notebookId: String, completion: @escaping (Result<[OneNoteTargetStore.Section], Error>) -> Void) {
+        acquireGraphToken { token in
+            guard let token else {
+                completion(.failure(NSError(domain: "OneNoteHelper", code: 401)))
+                return
+            }
+
+            struct Response: Decodable {
+                struct Section: Decodable { let id: String; let displayName: String? }
                 let value: [Section]
                 let nextLink: String?
                 private enum CodingKeys: String, CodingKey {
@@ -511,50 +554,77 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
 
-            func fetchPage(urlString: String, accum: [SectionStore.Section], completion: @escaping (Result<[SectionStore.Section], Error>) -> Void) {
+            func fetchPage(urlString: String, accum: [OneNoteTargetStore.Section]) {
                 self.graphGET(token: token, url: urlString) { result in
                     switch result {
                     case .failure(let err):
                         completion(.failure(err))
                     case .success(let data):
-                        guard let resp = try? JSONDecoder().decode(SectionsResponse.self, from: data) else {
-                            if let jsonString = String(data: data, encoding: .utf8) {
-                                self.log("Sections (all notebooks) decode failed. Payload: \(jsonString)")
-                            } else {
-                                self.log("Sections (all notebooks) decode failed. Payload not UTF-8 or empty (\(data.count) bytes)")
-                            }
+                        guard let resp = try? JSONDecoder().decode(Response.self, from: data) else {
+                            let payload = String(data: data, encoding: .utf8) ?? ""
+                            self.log("Sections decode failed. Payload: \(payload)")
                             completion(.failure(NSError(domain: "OneNoteHelper", code: 500)))
                             return
                         }
-                        let mapped: [SectionStore.Section] = resp.value.map { s in
-                            let nbName = s.parentNotebook?.displayName ?? s.parentNotebook?.id ?? "Notebook"
-                            let secName = s.displayName ?? s.id
-                            return SectionStore.Section(id: s.id, name: "\(nbName) / \(secName)")
-                        }
+                        let mapped = resp.value.map { OneNoteTargetStore.Section(id: $0.id, name: $0.displayName ?? $0.id) }
                         let total = accum + mapped
                         if let next = resp.nextLink {
-                            fetchPage(urlString: next, accum: total, completion: completion)
+                            fetchPage(urlString: next, accum: total)
                         } else {
-                            // Sort by notebook name then section name. Since `name` is "Notebook / Section",
-                            // split once on " / " to extract components for sorting.
-                            let sorted = total.sorted { a, b in
-                                let aParts = a.name.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false).map { $0.trimmingCharacters(in: .whitespaces) }
-                                let bParts = b.name.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false).map { $0.trimmingCharacters(in: .whitespaces) }
-                                let aNb = aParts.first ?? ""
-                                let bNb = bParts.first ?? ""
-                                if aNb != bNb { return aNb.localizedCaseInsensitiveCompare(bNb) == .orderedAscending }
-                                let aSec = aParts.count > 1 ? aParts[1] : ""
-                                let bSec = bParts.count > 1 ? bParts[1] : ""
-                                return aSec.localizedCaseInsensitiveCompare(bSec) == .orderedAscending
-                            }
-                            completion(.success(sorted))
+                            completion(.success(total.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }))
                         }
                     }
                 }
             }
 
-            let firstPageURL = self.graphURL("me/onenote/sections?$select=id,displayName&$expand=parentNotebook($select=id,displayName)&$top=200")
-            fetchPage(urlString: firstPageURL, accum: [], completion: completion)
+            // Includes sections inside section groups.
+            let first = self.graphURL("me/onenote/notebooks/\(notebookId)/sections?$select=id,displayName&$top=200")
+            fetchPage(urlString: first, accum: [])
+        }
+    }
+
+    func fetchPages(sectionId: String, completion: @escaping (Result<[OneNoteTargetStore.Page], Error>) -> Void) {
+        acquireGraphToken { token in
+            guard let token else {
+                completion(.failure(NSError(domain: "OneNoteHelper", code: 401)))
+                return
+            }
+
+            struct Response: Decodable {
+                struct Page: Decodable { let id: String; let title: String? }
+                let value: [Page]
+                let nextLink: String?
+                private enum CodingKeys: String, CodingKey {
+                    case value
+                    case nextLink = "@odata.nextLink"
+                }
+            }
+
+            func fetchPage(urlString: String, accum: [OneNoteTargetStore.Page]) {
+                self.graphGET(token: token, url: urlString) { result in
+                    switch result {
+                    case .failure(let err):
+                        completion(.failure(err))
+                    case .success(let data):
+                        guard let resp = try? JSONDecoder().decode(Response.self, from: data) else {
+                            let payload = String(data: data, encoding: .utf8) ?? ""
+                            self.log("Pages decode failed. Payload: \(payload)")
+                            completion(.failure(NSError(domain: "OneNoteHelper", code: 500)))
+                            return
+                        }
+                        let mapped = resp.value.map { OneNoteTargetStore.Page(id: $0.id, title: $0.title ?? $0.id) }
+                        let total = accum + mapped
+                        if let next = resp.nextLink {
+                            fetchPage(urlString: next, accum: total)
+                        } else {
+                            completion(.success(total.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }))
+                        }
+                    }
+                }
+            }
+
+            let first = self.graphURL("me/onenote/sections/\(sectionId)/pages?$select=id,title&$top=100")
+            fetchPage(urlString: first, accum: [])
         }
     }
 
@@ -739,6 +809,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let boundary = "----onenote-\(UUID().uuidString)"
         var body = Data()
 
+        let targetSectionId = UserDefaults.standard.string(forKey: targetSectionIdKey)
+        let targetPageId = UserDefaults.standard.string(forKey: targetPageIdKey)
+        let shouldAppendToPage = (targetPageId?.isEmpty == false)
+
+        struct OneNotePatchCommand: Encodable {
+            let target: String
+            let action: String
+            let content: String
+        }
+
+        func appendMainPartForCreate(htmlDocument: String) {
+            appendMultipartPart(&body, boundary: boundary,
+                                contentType: "text/html; charset=utf-8",
+                                contentDisposition: "form-data; name=\"Presentation\"",
+                                data: Data(htmlDocument.utf8))
+        }
+
+        func appendMainPartForAppend(htmlFragment: String) {
+            // Use OneNote patch commands to append HTML fragment to the end of the page.
+            let commands = [OneNotePatchCommand(target: "body", action: "append", content: htmlFragment)]
+            let data = (try? JSONEncoder().encode(commands)) ?? Data("[]".utf8)
+            appendMultipartPart(&body, boundary: boundary,
+                                contentType: "application/json; charset=utf-8",
+                                contentDisposition: "form-data; name=\"commands\"",
+                                data: data)
+        }
+
         func fallbackToImages() -> Bool {
             guard let images = self.renderPDFAsPNGs(fileURL: effectiveURL, maxPages: min(maxPages, 30), scale: renderScale), !images.isEmpty else {
                 self.log("Failed to extract text or render PDF at \(filePath)")
@@ -769,10 +866,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             </html>
             """
 
-            appendMultipartPart(&body, boundary: boundary,
-                                contentType: "text/html; charset=utf-8",
-                                contentDisposition: "form-data; name=\"Presentation\"",
-                                data: Data(html.utf8))
+            if shouldAppendToPage {
+                let fragment = """
+                <div>
+                  <h2>\(escapeHTML(jobTitle))</h2>
+                  <p><b>Source:</b> \(escapeHTML(pageTitle))</p>
+                  <p>Imported by OneNote Helper.</p>
+                  <p>User: \(escapeHTML(user)) &nbsp; Job: \(escapeHTML(job))</p>
+                  \(imgHTML)
+                </div>
+                """
+                appendMainPartForAppend(htmlFragment: fragment)
+            } else {
+                appendMainPartForCreate(htmlDocument: html)
+            }
 
             for item in images {
                 appendMultipartPart(&body,
@@ -842,10 +949,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             </html>
             """
 
-            appendMultipartPart(&body, boundary: boundary,
-                                contentType: "text/html; charset=utf-8",
-                                contentDisposition: "form-data; name=\"Presentation\"",
-                                data: Data(html.utf8))
+            if shouldAppendToPage {
+                let fragment = """
+                <div>
+                  <h2>\(escapeHTML(jobTitle))</h2>
+                  <p><b>Source:</b> \(escapeHTML(pageTitle))</p>
+                  <p>Imported by OneNote Helper.</p>
+                  <p>User: \(escapeHTML(user)) &nbsp; Job: \(escapeHTML(job))</p>
+                  <hr />
+                  \(pageSections)
+                </div>
+                """
+                appendMainPartForAppend(htmlFragment: fragment)
+            } else {
+                appendMainPartForCreate(htmlDocument: html)
+            }
 
         case .hybrid:
             if let pagesHTMLRaw = self.extractPDFPagesAsHTMLBodies(fileURL: effectiveURL, maxPages: maxPages) {
@@ -919,10 +1037,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     </html>
                     """
 
-                    appendMultipartPart(&body, boundary: boundary,
-                                        contentType: "text/html; charset=utf-8",
-                                        contentDisposition: "form-data; name=\"Presentation\"",
-                                        data: Data(html.utf8))
+                    if shouldAppendToPage {
+                        let fragment = """
+                        <div>
+                          <h2>\(escapeHTML(jobTitle))</h2>
+                          <p><b>Source:</b> \(escapeHTML(pageTitle))</p>
+                          <p>Imported by OneNote Helper.</p>
+                          <p>User: \(escapeHTML(user)) &nbsp; Job: \(escapeHTML(job))</p>
+                          <hr />
+                          \(pageSections)
+                        </div>
+                        """
+                        appendMainPartForAppend(htmlFragment: fragment)
+                    } else {
+                        appendMainPartForCreate(htmlDocument: html)
+                    }
 
                     // Attach embedded images referenced by name:<token>.
                     for item in xobjImages {
@@ -952,23 +1081,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
-        let targetSectionId = UserDefaults.standard.string(forKey: targetSectionIdKey)
-        let postUrl: String
-        if let targetSectionId, !targetSectionId.isEmpty {
-            postUrl = self.graphURL("me/onenote/sections/\(targetSectionId)/pages")
+        let urlString: String
+        let method: String
+        if shouldAppendToPage, let targetPageId, !targetPageId.isEmpty {
+            urlString = self.graphURL("me/onenote/pages/\(targetPageId)/content")
+            method = "PATCH"
+        } else if let targetSectionId, !targetSectionId.isEmpty {
+            urlString = self.graphURL("me/onenote/sections/\(targetSectionId)/pages")
+            method = "POST"
         } else {
             // Fallback to default notebook/section behavior.
-            postUrl = self.graphURL("me/onenote/pages")
+            urlString = self.graphURL("me/onenote/pages")
+            method = "POST"
         }
 
-        guard let url = URL(string: postUrl) else {
+        guard let url = URL(string: urlString) else {
             log("Invalid Graph URL")
             completion(false)
             return
         }
 
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
+        request.httpMethod = method
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")

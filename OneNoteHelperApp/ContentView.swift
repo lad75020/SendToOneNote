@@ -7,7 +7,7 @@ struct ContentView: View {
 
     @State private var showLogs: Bool = false
     @StateObject private var logs = LogStore.shared
-    @StateObject private var sections = SectionStore.shared
+    @StateObject private var targets = OneNoteTargetStore.shared
     @StateObject private var settings = SettingsStore.shared
 
     /// Controls how the helper builds the OneNote page when importing print jobs.
@@ -127,18 +127,11 @@ struct ContentView: View {
                     .foregroundStyle(Color.blue)
                     .accessibilityHidden(true)
 
-                Text("OneNote Helper")
+                Text("OneNote Printer Helper")
                     .font(.title2)
                     .foregroundStyle(primaryText)
 
                 Spacer()
-
-                Button("Quit") {
-                    NSApp.terminate(nil)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .help("Quit OneNote Helper")
 
                 HStack(spacing: 8) {
                     ProgressView()
@@ -151,6 +144,77 @@ struct ContentView: View {
                         .help("Current activity: \(logs.activityState.label)")
                 }
             }
+            panel(title: "Import mode") {
+                VStack(alignment: .leading, spacing: 10) {
+                    Picker("Mode", selection: $importMode) {
+                        Text("Image").tag("image")
+                        Text("Text").tag("text")
+                        Text("Hybrid").tag("hybrid")
+                    }
+                    .pickerStyle(.segmented)
+                    .controlSize(.regular)
+                    .help("Choose how pages are generated in OneNote: images only, text only, or hybrid.")
+                }
+            }
+                panel(title: "Target") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Button(targets.isLoading ? "Loading…" : "Refresh") {
+                                targets.refreshAll()
+                            }
+                            .disabled(targets.isLoading)
+                            .buttonStyle(.bordered)
+                            .help("Load notebooks/sections/pages from OneNote and refresh the lists.")
+
+                            Spacer()
+
+                            if let label = targets.selectionSummary {
+                                Text(label)
+                                    .foregroundStyle(secondaryText)
+                                    .help("Current target selection")
+                            }
+                        }
+
+                        Picker("Notebook", selection: Binding(get: {
+                            targets.selectedNotebookId ?? ""
+                        }, set: { newValue in
+                            targets.selectedNotebookId = newValue.isEmpty ? nil : newValue
+                        })) {
+                            Text("(None)").tag("")
+                            ForEach(targets.notebooks) { nb in
+                                Text(nb.name).tag(nb.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .help("Select the OneNote notebook.")
+
+                        Picker("Section", selection: Binding(get: {
+                            targets.selectedSectionId ?? ""
+                        }, set: { newValue in
+                            targets.selectedSectionId = newValue.isEmpty ? nil : newValue
+                        })) {
+                            Text("(None)").tag("")
+                            ForEach(targets.sections) { s in
+                                Text(s.name).tag(s.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .help("Select the section inside the chosen notebook.")
+
+                        Picker("Page", selection: Binding(get: {
+                            targets.selectedPageId ?? ""
+                        }, set: { newValue in
+                            targets.selectedPageId = newValue.isEmpty ? nil : newValue
+                        })) {
+                            Text("None").tag("")
+                            ForEach(targets.pages) { p in
+                                Text(p.title).tag(p.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .help("If 'None' is selected, printouts create new pages. If a page is selected, printouts are appended to that page.")
+                    }
+                }
 
             panel(title: "Microsoft Graph / MSAL") {
                 VStack(alignment: .leading, spacing: 10) {
@@ -277,52 +341,8 @@ struct ContentView: View {
                 }
             }
 
-            panel(title: "Import mode") {
-                VStack(alignment: .leading, spacing: 10) {
-                    Picker("Mode", selection: $importMode) {
-                        Text("Image").tag("image")
-                        Text("Text").tag("text")
-                        Text("Hybrid").tag("hybrid")
-                    }
-                    .pickerStyle(.segmented)
-                    .controlSize(.regular)
-                    .help("Choose how pages are generated in OneNote: images only, text only, or hybrid.")
-                }
-            }
 
-            panel(title: "Target section") {
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Button(sections.isLoading ? "Loading…" : "Refresh") {
-                            sections.refresh()
-                        }
-                        .disabled(sections.isLoading)
-                        .buttonStyle(.bordered)
-                        .help("Load all OneNote sections and refresh the list.")
 
-                        Spacer()
-
-                        if let name = UserDefaults.standard.string(forKey: "TargetSectionName") {
-                            Text(name)
-                                .foregroundStyle(secondaryText)
-                                .help("Currently selected section.")
-                        }
-                    }
-
-                    Picker("Section", selection: Binding(get: {
-                        sections.selectedSectionId ?? ""
-                    }, set: { newValue in
-                        sections.selectedSectionId = newValue.isEmpty ? nil : newValue
-                    })) {
-                        Text("(None)").tag("")
-                        ForEach(sections.sections) { s in
-                            Text(s.name).tag(s.id)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .help("Where new OneNote pages will be created.")
-                }
-            }
 
             HStack {
                 Toggle("Show logs", isOn: $showLogs)

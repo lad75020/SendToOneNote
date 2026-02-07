@@ -23,6 +23,20 @@
 		FDFD4DF6C494D225587C4770 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C09E0C66B85B1C2CDDDAD5B /* main.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildRule section */
+		4DEB12AE2F35447300D91294 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = sourcecode.c;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+			);
+			script = "# <com.apple.compilers.gcc>\n";
+		};
+/* End PBXBuildRule section */
+
 /* Begin PBXContainerItemProxy section */
 		1B508A8CDBC64355BABBD88D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -204,9 +218,9 @@
 			buildConfigurationList = A1B2C3D4E5F6A7B8C9D0E621 /* Build configuration list for PBXNativeTarget "onenote_backend" */;
 			buildPhases = (
 				A1B2C3D4E5F6A7B8C9D0E404 /* Sources */,
-				A1B2C3D4E5F6A7B8C9D0E403 /* ShellScript */,
 			);
 			buildRules = (
+				4DEB12AE2F35447300D91294 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -325,25 +339,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "set -euo pipefail\n\nXPC=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\n\n# locate project root robustly\nROOT=\"${SRCROOT}\"\n\n# Find gs in sources\nSRC_GS=\"$(/usr/bin/find \"$ROOT\" -maxdepth 10 -type f -path \"*/OneNoteHelperApp/Resources/ghostscript/gs\" | /usr/bin/head -n 1)\"\nif [ -z \"$SRC_GS\" ]; then\n  SRC_GS=\"$(/usr/bin/find \"$ROOT\" -maxdepth 10 -type f -path \"*/Resources/ghostscript/gs\" | /usr/bin/head -n 1)\"\nfi\n\necho \"XPC=$XPC\"\necho \"SRC_GS=$SRC_GS\"\n\nif [ -z \"$SRC_GS\" ] || [ ! -f \"$SRC_GS\" ]; then\n  echo \"ERROR: cannot find Resources/ghostscript/gs\" >&2\n  exit 1\nfi\n\nDST_GS=\"${TARGET_BUILD_DIR}/${EXECUTABLE_FOLDER_PATH}/gs\"\necho \"DST_GS=$DST_GS\"\n\ncp -f \"$SRC_GS\" \"$DST_GS\"\nchmod 755 \"$DST_GS\"\n\n# Bundle deps + rewrite install names inside the XPC\npython3 \"$ROOT/OneNoteHelperApp/Scripts/bundle_gs_and_deps.py\" \"$XPC\"\n";
-		};
-		A1B2C3D4E5F6A7B8C9D0E403 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/onenote_backend",
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				/usr/libexec/cups/backend/onenote_backend,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\ninstall -m 0755 \"$(BUILT_PRODUCTS_DIR)/onenote_backend\" \"/usr/libexec/cups/backend/onenote_backend\"";
 		};
 		F298149C683A4F67803D85F1 /* Copy Embedded XPC Service */ = {
 			isa = PBXShellScriptBuildPhase;

@@ -6,10 +6,10 @@
 	<string>OneNote Helper</string>
 	<key>CFBundleExecutable</key>
 	<string>OneNoteHelperApp</string>
-	<key>CFBundleIdentifier</key>
-	<string>fr.dubertrand.OneNoteHelperApp</string>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>fr.dubertrand.OneNoteHelperApp</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

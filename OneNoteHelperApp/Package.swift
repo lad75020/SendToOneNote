@@ -7,7 +7,8 @@ let package = Package(
         .macOS(.v13)
     ],
     products: [
-        .executable(name: "OneNoteHelperApp", targets: ["OneNoteHelperApp"])
+        .executable(name: "OneNoteHelperApp", targets: ["OneNoteHelperApp"]),
+        .executable(name: "onenote_backend", targets: ["OneNoteCUPSBackend"])
     ],
     dependencies: [
         // Microsoft Authentication Library for Apple platforms (MSAL)
@@ -27,6 +28,15 @@ let package = Package(
                 // Optional: bundle Ghostscript `gs` binary to enable PS->PDF conversion under App Sandbox.
                 // See Resources/ghostscript/README.md
                 .copy("Resources/ghostscript")
+            ]
+        ),
+        .executableTarget(
+            name: "OneNoteCUPSBackend",
+            path: "Sources/OneNoteCUPSBackend",
+            sources: ["onenote_backend.c"],
+            linkerSettings: [
+                // Link against libcups which provides CUPS backend symbols.
+                .linkedLibrary("cups")
             ]
         )
     ]

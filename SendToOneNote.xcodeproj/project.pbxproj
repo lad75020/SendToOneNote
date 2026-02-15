@@ -26,12 +26,13 @@
 /* Begin PBXBuildRule section */
 		4DEB12AE2F35447300D91294 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
+			compilerSpec = com.apple.compilers.llvm.clang.1_0;
 			fileType = sourcecode.c;
 			inputFiles = (
 			);
 			isEditable = 1;
 			outputFiles = (
+				"$(SRCROOT)/onenote_backend",
 			);
 			script = "# <com.apple.compilers.gcc>\n";
 		};
